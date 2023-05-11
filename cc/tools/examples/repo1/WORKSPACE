@@ -1,0 +1,5 @@
+new_local_repository(
+    name = "repo2",
+    path = "../repo2",
+    build_file = "../repo2/BUILD",
+)
