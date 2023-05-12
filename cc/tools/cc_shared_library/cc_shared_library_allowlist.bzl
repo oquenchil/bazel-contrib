@@ -1,4 +1,5 @@
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test")
+load(":static_linker_inputs.bzl", "static_linker_inputs")
 
 def _same_package_or_above(label_a, label_b):
     if label_a.workspace_name != label_b.workspace_name:
@@ -25,11 +26,12 @@ def _check_if_target_under_path(value, pattern):
 
     return pattern.package == value.package and pattern.name == value.name
 
+
 def _cc_shared_library_allowlist_test_impl(env, target):
     static_deps_list = []
     for action in target.actions:
         for file in action.outputs.to_list():
-            if file.basename == "{}_static_linker_inputs.txt".format(target.label.name):
+            if file.basename.endswith("_static_linker_inputs.txt"):
                 static_deps_list = [Label(line) for line in action.content.split("\n")[1:]]
                 break
 
@@ -63,10 +65,14 @@ def _cc_shared_library_allowlist_test_impl(env, target):
 
 
 def _cc_shared_library_allowlist_test_macro(name, target, static_deps_allowlist):
+    static_linker_inputs(
+        name = name + "_static_linker_inputs",
+        target = [target],
+    )
     analysis_test(
         name = name,
         impl = _cc_shared_library_allowlist_test_impl,
-        target = target,
+        target = name + "_static_linker_inputs",
         attrs = {
             "_static_deps_allowlist": attr.string_list(default = static_deps_allowlist),
         },

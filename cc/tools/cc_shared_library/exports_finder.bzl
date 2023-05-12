@@ -1,8 +1,4 @@
-def _get_dynamic_library(target):
-    library = target[CcSharedLibraryInfo].linker_input.libraries[0]
-    if library.resolved_symlink_dynamic_library != None:
-        return library.resolved_symlink_dynamic_library
-    return library.dynamic_library
+load(":utils.bzl", "get_dynamic_library", "get_dynamic_library_linking_inputs")
 
 def _create_objects_to_target_str(objects, target, inputs_set):
     object_file_to_target = []
@@ -14,13 +10,7 @@ def _create_objects_to_target_str(objects, target, inputs_set):
 ExportsFinderInfo=provider()
 
 def _exports_finder_aspect_impl(target, ctx):
-    inputs_set = {}
-    for action in target.actions:
-        for file in action.outputs.to_list():
-            if file.path == _get_dynamic_library(target).path:
-                for input_file in action.inputs.to_list():
-                    inputs_set[input_file.path] = True
-
+    inputs_set = get_dynamic_library_linking_inputs(target)
 
     deps_cc_infos = []
     for dep in ctx.rule.attr.deps:
@@ -41,7 +31,7 @@ def _exports_finder_aspect_impl(target, ctx):
     ctx.actions.write(content = "\n".join(object_file_to_target), output = object_file_to_target_map_file)
 
 
-    so_file = _get_dynamic_library(target)
+    so_file = get_dynamic_library(target)
     targets_of_exported_objects_file = ctx.actions.declare_file(ctx.label.name + "_targets_of_exported_objects.txt")
     ctx.actions.run_shell(
         inputs = [so_file, object_file_to_target_map_file] + object_inputs,

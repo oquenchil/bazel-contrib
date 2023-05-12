@@ -1,5 +1,7 @@
 load(":cc_shared_library_allowlist.bzl", "cc_shared_library_allowlist_test")
 load(":exports_finder.bzl", "exports_finder")
+load(":static_linker_inputs.bzl", "static_linker_inputs")
+load(":claimed_exports.bzl", "claimed_exports")
 
 cc_shared_library(
     name = "foo_so",
@@ -29,6 +31,20 @@ cc_shared_library_allowlist_test(
 
 exports_finder(
     name = "foo_so_exports",
+    target = [
+        ":foo_so",
+    ]
+)
+
+static_linker_inputs(
+    name = "foo_so_static_linker_inputs",
+    target = [
+        ":foo_so",
+    ]
+)
+
+claimed_exports(
+    name = "foo_so_claimed_exports",
     target = [
         ":foo_so",
     ]
