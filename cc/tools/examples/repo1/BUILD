@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["foo.lds"])
+
 cc_library(
     name = "foo",
     srcs = ["foo.cc"],
